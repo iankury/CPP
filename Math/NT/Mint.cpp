@@ -27,17 +27,17 @@ struct Mint {
   operator int() { return x; }
   Mint operator - (const Mint& _a) const { int ans = x - _a.x; return ans < 0 ? M + ans : ans; }
   Mint operator + (const Mint& _a) const { int ans = x + _a.x; return ans - (ans >= M) * M; }
-  Mint operator * (const Mint& _a) const { return (ll)x * _a.x % M; }
-  Mint operator / (const Mint& _a) const { return (ll)x * _a.MMI().x % M; }
+  Mint operator * (const Mint& _a) const { return ll(x) * _a.x % M; }
+  Mint operator / (const Mint& _a) const { return ll(x) * _a.MMI().x % M; }
   bool operator == (const Mint& _a) const { return x == _a.x; }
   bool operator != (const Mint& _a) const { return x != _a.x; }
+  Mint& operator += (const Mint& _a) { *this = *this + _a; return *this; }
+  Mint& operator -= (const Mint& _a) { *this = *this - _a; return *this; }
+  Mint& operator *= (const Mint& _a) { *this = *this * _a; return *this; }
+  Mint& operator /= (const Mint& _a) { *this = *this / _a; return *this; }
+  istream& operator >> (istream& is) { is >> this->x; return is; }
+  ostream& operator << (ostream& os) const { os << this->x; return os; }
 };
-Mint& operator += (Mint& _a, const Mint& _b) { return _a = _a + _b; }
-Mint& operator -= (Mint& _a, const Mint& _b) { return _a = _a - _b; }
-Mint& operator *= (Mint& _a, const Mint& _b) { return _a = _a * _b; }
-Mint& operator /= (Mint& _a, const Mint& _b) { return _a = _a / _b; }
-istream& operator >> (istream& is, Mint& _a) { is >> _a.x; return is; }
-ostream& operator << (ostream& os, const Mint& _a) { os << _a.x; return os; }
 
 Mint ModPow(Mint _a, ll _b) {
   Mint ans = 1;
