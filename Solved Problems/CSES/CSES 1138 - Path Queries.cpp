@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+void io() { ios_base::sync_with_stdio(0), cin.tie(0); }
 typedef long long ll;
 typedef vector<int> vi;
 
@@ -90,11 +90,59 @@ public:
 	}
 };
 
-int main() {
-  ios_base::sync_with_stdio(0);
-  cin.tie(0);
+vector<ll> a, sum_from_root;
+vi dfs_idx, subtree_size;
+vector<vi> adj;
+int global_counter = 0;
 
-  
+void DFS(int u, int pi) {
+  dfs_idx[u] = ++global_counter;
+  sum_from_root[dfs_idx[u]] = sum_from_root[dfs_idx[pi]] + a[u];
+  for (int v : adj[u])
+    if (v != pi) {
+      DFS(v, u);
+      subtree_size[dfs_idx[u]] += subtree_size[dfs_idx[v]];
+    }
+}
+
+int main() {
+  io();
+
+  int n, q;
+  cin >> n >> q;
+  a.resize(n + 1);
+  adj.resize(n + 1);
+  dfs_idx.resize(n + 1);
+  subtree_size.assign(n + 1, 1);
+  sum_from_root.resize(n + 1);
+  for (int i = 1; i <= n; i++)
+    cin >> a[i];
+  for (int i = 1; i < n; i++) {
+    int u, v; 
+    cin >> u >> v;
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+  }
+  DFS(1, 0);
+
+	SegTree tree(sum_from_root);
+
+	for (int i = 0; i < q; i++) {
+		int type, u;
+		cin >> type >> u;
+		const int idx = dfs_idx[u];
+		const int end_idx = subtree_size[idx] + idx - 1;
+		if (type == 1) {
+			ll new_value;
+			cin >> new_value;
+			const ll old_value = a[u];
+			a[u] = new_value;
+			const ll delta = new_value - old_value;
+			tree.Edit_Range(idx, end_idx, delta, false);
+		}
+		else 
+			cout << tree.RSQ(idx, idx) << "\n";
+	}
 
   return 0;
 }
