@@ -20,18 +20,18 @@ struct custom_hash {
 };
 
 class DistinctValuesInRange {
+  const int n, q;
   vi& values;
   vi& queries_from;
   vi& queries_to;
   vi sorted;
   void Encode() {
-    int encode_value = 0, n = values.size();
+    int encode_value = -1;
     unordered_map<int, int, custom_hash> encode;
     for (int i = 0; i < n; i++) {
-      if (encode.count(values[i]))
-        values[i] = encode[values[i]];
-      else
-        values[i] = encode[values[i]] = encode_value++;
+      if (!encode.count(values[i]))
+        encode[values[i]] = ++encode_value;
+      values[i] = encode[values[i]];
     }
   }
   void Sort() {
@@ -43,12 +43,12 @@ class DistinctValuesInRange {
       if (block_start_p == block_start_q)
         return queries_to[p] < queries_to[q];
       return block_start_p < block_start_q;
-    });
+      });
   }
   void Process() {
-    ans.resize(queries_from.size());
+    ans.resize(q);
     int distinct = 1, l = 0, r = 0;
-    vi freq(values.size(), 0);
+    vi freq(n);
     freq[0] = 1;
     for (int i : sorted) {
       const int L = queries_from[i] - 1;
@@ -70,14 +70,22 @@ class DistinctValuesInRange {
   }
 public:
   vi ans;
-  DistinctValuesInRange(vi& values, vi& queries_from, vi& queries_to) 
-    : values(values), queries_from(queries_from), queries_to(queries_to) {
-    sorted.resize(queries_from.size());
+  DistinctValuesInRange(
+    vi& values,
+    vi& queries_from,
+    vi& queries_to
+  ) :
+    values(values),
+    queries_from(queries_from),
+    queries_to(queries_to),
+    n(values.size()),
+    q(queries_from.size()) {
+    sorted.resize(q);
     Encode();
     Sort();
     Process();
-  } // Mutates input! Indexing from 0
-}; 
+  }
+}; // Mutates input! Indexing from 0. Attention: L/R offset!
 
 int main() {
   io();
