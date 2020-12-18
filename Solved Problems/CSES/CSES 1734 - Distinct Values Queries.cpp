@@ -1,11 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+void io() { ios_base::sync_with_stdio(0), cin.tie(0); }
 typedef long long ll;
 typedef vector<int> vi;
 
 struct custom_hash {
   static uint64_t splitmix64(uint64_t x) {
+    // http://xorshift.di.unimi.it/splitmix64.c
     x += 0x9e3779b97f4a7c15;
     x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
     x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
@@ -18,84 +19,81 @@ struct custom_hash {
   }
 };
 
-const int M = 1000000007, BIG = 0x3f3f3f3f;
-
-int n, q;
-vi x, a, b;
-
-void Encode() {
-  int encode_value = 0;
-  unordered_map<int, int> encode;
-  for (int i = 0; i < n; i++) {
-    if (encode.count(x[i]))
-      x[i] = encode[x[i]];
-    else
-      x[i] = encode[x[i]] = encode_value++;
+class DistinctValuesInRange {
+  vi& values;
+  vi& queries_from;
+  vi& queries_to;
+  vi sorted;
+  void Encode() {
+    int encode_value = 0, n = values.size();
+    unordered_map<int, int, custom_hash> encode;
+    for (int i = 0; i < n; i++) {
+      if (encode.count(values[i]))
+        values[i] = encode[values[i]];
+      else
+        values[i] = encode[values[i]] = encode_value++;
+    }
   }
-}
-
-vi Sort() {
-  vi ans(q);
-  iota(begin(ans), end(ans), 0);
-  sort(begin(ans), end(ans), [&](int p, int q) {
-    const int block_start_p = a[p] / 511;
-    const int block_start_q = a[q] / 511;
-    if (block_start_p == block_start_q)
-      return b[p] < b[q];
-    return block_start_p < block_start_q;
+  void Sort() {
+    const int SQRT = 511;
+    iota(begin(sorted), end(sorted), 0);
+    sort(begin(sorted), end(sorted), [&](int p, int q) {
+      const int block_start_p = queries_from[p] / SQRT;
+      const int block_start_q = queries_from[q] / SQRT;
+      if (block_start_p == block_start_q)
+        return queries_to[p] < queries_to[q];
+      return block_start_p < block_start_q;
     });
-  return ans;
-}
-
-vi Process() {
-  Encode();
-  const vi sorted = Sort();
-  vi ans(q);
-  int distinct = 1, l = 0, r = 0;
-  vi freq(n, 0);
-  freq[0] = 1;
-  for (int i : sorted) {
-    const int L = a[i] - 1;
-    const int R = b[i] - 1;
-    while (l < L)
-      if (--freq[x[l++]] == 0)
-        --distinct;
-    while (l > L)
-      if (++freq[x[--l]] == 1)
-        ++distinct;
-    while (r < R)
-      if (++freq[x[++r]] == 1)
-        ++distinct;
-    while (r > R)
-      if (--freq[x[r--]] == 0)
-        --distinct;
-    ans[i] = distinct;
   }
-  return ans;
-}
-
-void Output() {
-  const vi ans = Process();
-  for (int i = 0; i < q; i++)
-    cout << ans[i] << "\n";
-}
+  void Process() {
+    ans.resize(queries_from.size());
+    int distinct = 1, l = 0, r = 0;
+    vi freq(values.size(), 0);
+    freq[0] = 1;
+    for (int i : sorted) {
+      const int L = queries_from[i] - 1;
+      const int R = queries_to[i] - 1;
+      while (l < L)
+        if (--freq[values[l++]] == 0)
+          --distinct;
+      while (l > L)
+        if (++freq[values[--l]] == 1)
+          ++distinct;
+      while (r < R)
+        if (++freq[values[++r]] == 1)
+          ++distinct;
+      while (r > R)
+        if (--freq[values[r--]] == 0)
+          --distinct;
+      ans[i] = distinct;
+    }
+  }
+public:
+  vi ans;
+  DistinctValuesInRange(vi& values, vi& queries_from, vi& queries_to) 
+    : values(values), queries_from(queries_from), queries_to(queries_to) {
+    sorted.resize(queries_from.size());
+    Encode();
+    Sort();
+    Process();
+  }
+};
 
 int main() {
-  ios_base::sync_with_stdio(0);
-  cin.tie(0);
+  io();
 
-  while (cin >> n) {
-    cin >> q;
-    x.resize(n);
-    for (int i = 0; i < n; i++)
-      cin >> x[i];
-    a.resize(q);
-    b.resize(q);
-    for (int i = 0; i < q; i++)
-      cin >> a[i] >> b[i];
+  int n, q;
+  cin >> n >> q;
+  vi x(n), a(q), b(q);
+  for (int i = 0; i < n; i++)
+    cin >> x[i];
+  for (int i = 0; i < q; i++)
+    cin >> a[i] >> b[i];
 
-    Output();
-  }
+  DistinctValuesInRange solver(x, a, b);
+
+  for (int k : solver.ans)
+    cout << k << "\n";
 
   return 0;
 }
