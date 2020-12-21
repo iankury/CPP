@@ -6,9 +6,7 @@ typedef vector<int> vi;
 typedef vector<ii> vii;
 #define FASTIO() ios_base::sync_with_stdio(0);cin.tie(0);cout.tie(0)
 
-const int N = 200005, M = 1000000007, BIG = 0x3f3f3f3f;
-
-int ct = 0;
+const int M = 1000000007;
 
 struct Mint {
   int x;
